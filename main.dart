@@ -5,6 +5,7 @@ import 'package:calculadora/operaciones/producto.dart';
 import 'package:calculadora/operaciones/division.dart';
 import 'package:calculadora/operaciones/modulo.dart';
 import 'package:calculadora/operaciones/potencia.dart';
+import 'package:flutter/services.dart';
 // Add more imports for each file in the 'operaciones' directory
 
 const List<String> list = <String>['Suma', 'Resta', 'Producto', 'Division', 'Modulo', 'Potencia'];
@@ -95,6 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: const InputDecoration(hintText: 'Ingrese el primer número'),
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly // Solo permite dígitos
+                  ],
                   ),
                 ),
                 const DropdownButtonExample(),
@@ -104,6 +108,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: const InputDecoration(hintText: 'Ingrese el segundo número'),
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                    ],
                   ),
                 ),
               ],
