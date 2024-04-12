@@ -6,7 +6,7 @@ import 'package:calculadora/operaciones/division.dart';
 import 'package:calculadora/operaciones/modulo.dart';
 import 'package:calculadora/operaciones/potencia.dart';
 import 'package:flutter/services.dart';
-// Add more imports for each file in the 'operaciones' directory
+import 'package:flutter/widgets.dart';
 
 const List<String> list = <String>['Suma', 'Resta', 'Producto', 'Division', 'Modulo', 'Potencia'];
 String dropdownValue = list.first;
@@ -40,10 +40,30 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class CustomInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final hasOnlyOneMinus = newValue.text.split('-').length - 1 <= 1;
+    final hasOnlyOneDot = newValue.text.split('.').length - 1 <= 1;
+    final hasValidCharacters = newValue.text.replaceAll(RegExp(r'[-0-9.]'), '').isEmpty;
+    final minusIsAtBeginning = !newValue.text.startsWith('-') || newValue.text.indexOf('-') == 0;
+
+    if (hasOnlyOneMinus && hasOnlyOneDot && hasValidCharacters && minusIsAtBeginning) {
+      return newValue;
+    } else {
+      return oldValue;
+    }
+  }
+}
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController num1Controller = TextEditingController();
   TextEditingController num2Controller = TextEditingController();
+  late TextEditingController activeController;
   double resultado = 0.0;
+
+  _MyHomePageState() {
+    activeController = num1Controller; // Nuevo: inicializar el controlador activo con num1Controller
+  }
 
   void calcular(){
     if(num1Controller.text.isEmpty || num2Controller.text.isEmpty){
@@ -72,6 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
         resultado = Potencia(num1, num2).resultado();
         break;
     }
+
+    num1Controller.clear();
+    num2Controller.clear();
     setState(() {});
   }
 
@@ -90,28 +113,124 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(
+                SizedBox(
+                  width: 300,
                   child: TextField(
                     controller: num1Controller,
                     decoration: const InputDecoration(hintText: 'Ingrese el primer número'),
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly // Solo permite dígitos
-                  ],
+                      CustomInputFormatter(), // Solo permite dígitos
+                    ],
+                    onTap:() {
+                      activeController = num1Controller;
+                    },
                   ),
+                  
                 ),
+                const SizedBox(width: 20),
                 const DropdownButtonExample(),
-                Expanded(
+                const SizedBox(width: 20),
+                SizedBox(
+                  width: 300,
                   child: TextField(
                     controller: num2Controller,
                     decoration: const InputDecoration(hintText: 'Ingrese el segundo número'),
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
+                      CustomInputFormatter(),
                     ],
+                    onTap:() {
+                      activeController = num2Controller;
+                    },
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        activeController.text = activeController.text + (index + 1).toString();
+                      },
+                      child: Text((index + 1).toString()),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        activeController.text = activeController.text + (index + 4).toString();
+                      },
+                      child: Text((index + 4).toString()),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        activeController.text = activeController.text + (index + 7).toString();
+                      },
+                      child: Text((index + 7).toString()),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        activeController.text = activeController.text + '.';
+                      },
+                      child: Text('.'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        activeController.text = activeController.text + '0';
+                      },
+                      child: Text('0'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (activeController.text.isEmpty) {
+                          activeController.text = activeController.text + '-';
+                        }
+                      },
+                      child: Text('-'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        activeController.clear();
+                      },
+                      child: Text('AC'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (activeController.text.isNotEmpty)
+                          activeController.text = activeController.text.substring(0, activeController.text.length - 1);
+                      },
+                      child: Text('DEL'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -123,6 +242,11 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             Text(
               'Resultado: $resultado',
+              style: TextStyle(
+                fontSize: 24, // Ajusta el tamaño de la fuente según tus necesidades
+                fontWeight: FontWeight.bold, // Hace que el texto sea negrita
+                color: Colors.teal, // Cambia el color del texto
+              ),
             ),
           ],
         ),
